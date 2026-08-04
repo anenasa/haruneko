@@ -144,7 +144,7 @@ export function AnchorInfoExtractor(useTitleAttribute = false, queryBloat: strin
             }
         }
         return {
-            id: element.pathname,
+            id: element.pathname || element.getAttribute('href'),
             title: useTitleAttribute ? element.title.trim() : element.innerText.trim()
         };
     };
@@ -261,6 +261,7 @@ export async function FetchMangasSinglePageCSS<E extends HTMLElement>(this: Mang
         }
     });
     const data = await FetchCSS<E>(request, query);
+    console.log(request.url, data.length);
     return data.map(element => {
         const { id, title } = extract.call(this, element, uri);
         return new Manga(this, provider, id, title);
