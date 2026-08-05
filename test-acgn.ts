@@ -3,19 +3,9 @@ import "./web/src/engine/RegExpSafe.ts";
 import "./web/src/engine/ArrayExtensions.ts";
 //import { CreateStorageController } from "./web/src/engine/StorageController.ts";
 //import { SettingsManager } from "./web/src/engine/SettingsManager.ts";
-import { SetupNodeFetchProvider } from "./web/src/engine/platform/FetchProvider.ts";
-import { parseHTML } from "linkedom";
+import { SetupFetchProvider } from "./web/src/engine/platform/FetchProvider.ts";
 
-const { window } = parseHTML("<html></html>");
-
-Object.assign(globalThis, {
-    window,
-    document: window.document,
-    HTMLElement: window.HTMLElement,
-    HTMLMetaElement: window.HTMLMetaElement,
-    HTMLAnchorElement: window.HTMLAnchorElement,
-});
-SetupNodeFetchProvider();
+SetupFetchProvider(undefined);
 import ACGN from "./web/src/engine/websites/ACGN.ts";
 
 const scraper = new ACGN();
@@ -32,14 +22,14 @@ const fakeProvider = {
         return { identifier, title };
     }
 } as any;
+
 //const list = await scraper.FetchMangas(fakeProvider);
+//for (const i of list.slice(0,20)) console.log(i.Identifier);
 const manga = await scraper.FetchManga(
     undefined as unknown as MangaPlugin,
     "https://comic.acgn.cc/manhua-zhanchihongzhitong.htm"
 );
 
-console.log(manga.Identifier);
-console.log(manga.Title);
 const chapters = await scraper.FetchChapters(manga);
 const chapter = chapters[0];
 await chapter.Update();

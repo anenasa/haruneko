@@ -17,6 +17,7 @@
         "@types/nw.js": "0.92.0",
         "eslint": "10.6.0",
         "eslint-plugin-tsdoc": "0.5.2",
+        "jsdom": "^30.0.1",
         "puppeteer-core": "25.2.1",
         "tslib": "2.8.1",
         "typescript": "6.0.3",
@@ -32,8 +33,5 @@
         "test:websites": "npm run build --workspaces && vitest run --config=test/vitest.websites.js",
         "npm:clean-install": "npm update --package-lock-only && npm clean-install",
         "postinstall": "npm --workspace=app/electron exec electron -- --no-sandbox --version"
-    },
-    "dependencies": {
-        "linkedom": "^0.18.13"
     }
 }
