@@ -1,1 +1,1 @@
-node --experimental-loader ./asset-loader.mjs --import tsx test-acgn.ts
+npx vite-node test-acgn.ts
