@@ -8,10 +8,6 @@ import { SetupFetchProvider } from "./web/src/engine/platform/FetchProvider.ts";
 
 SetupFetchProvider(undefined);
 
-
-
-const scraper = new websites.ACGN();
-
 //const storageController = CreateStorageController();
 //const settingsManager = new SettingsManager(storageController);
 //const provider = scraper.CreatePlugin(
@@ -20,25 +16,32 @@ const scraper = new websites.ACGN();
 //);
 
 const fakeProvider = {
+    Initialize() {},
     CreateEntry(identifier: string, title: string) {
         return { identifier, title };
     }
 } as any;
 
-//const list = await scraper.FetchMangas(fakeProvider);
-//for (const i of list.slice(0,20)) console.log(i.Identifier);
-const manga = await scraper.FetchManga(
-    undefined as unknown as MangaPlugin,
-    "https://comic.acgn.cc/manhua-zhanchihongzhitong.htm"
-);
+for (const website of Object.values(websites)) {
+    const scraper = new website();
+    console.log(scraper.Identifier);
+    const mangas = await scraper.FetchMangas(fakeProvider);
+    for (const i of mangas.slice(0,5)) console.log(i.Identifier);
+    //const manga = await scraper.FetchManga(
+        //undefined as unknown as MangaPlugin,
+        //"https://comic.acgn.cc/manhua-zhanchihongzhitong.htm"
+    //);
 
-const chapters = await scraper.FetchChapters(manga);
-const chapter = chapters[0];
-await chapter.Update();
-const pages = chapter.Entries.Value;
-const blob = await pages[0].Fetch(
-    0,
-    new AbortController().signal
-);
-const buffer = Buffer.from(await blob.arrayBuffer());
-await fs.promises.writeFile("page.jpg", buffer);
+    const chapters = await scraper.FetchChapters(mangas[0]);
+    const chapter = chapters[0];
+    await chapter.Update();
+    const pages = chapter.Entries.Value;
+    const blob = await pages[0].Fetch(
+        0,
+        new AbortController().signal
+    );
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    await fs.promises.writeFile(scraper.Identifier, buffer);
+}
+
+
