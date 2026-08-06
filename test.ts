@@ -1,14 +1,16 @@
 import fs from 'node:fs';
 import "./web/src/engine/RegExpSafe.ts";
 import "./web/src/engine/ArrayExtensions.ts";
+import * as websites from './web/src/engine/websites/_index';
 //import { CreateStorageController } from "./web/src/engine/StorageController.ts";
 //import { SettingsManager } from "./web/src/engine/SettingsManager.ts";
 import { SetupFetchProvider } from "./web/src/engine/platform/FetchProvider.ts";
 
 SetupFetchProvider(undefined);
-import ACGN from "./web/src/engine/websites/ACGN.ts";
 
-const scraper = new ACGN();
+
+
+const scraper = new websites.ACGN();
 
 //const storageController = CreateStorageController();
 //const settingsManager = new SettingsManager(storageController);
