@@ -22,26 +22,30 @@ const fakeProvider = {
     }
 } as any;
 
-for (const website of Object.values(websites)) {
-    const scraper = new website();
-    console.log(scraper.Identifier);
-    const mangas = await scraper.FetchMangas(fakeProvider);
-    for (const i of mangas.slice(0,5)) console.log(i.Identifier);
-    //const manga = await scraper.FetchManga(
-        //undefined as unknown as MangaPlugin,
-        //"https://comic.acgn.cc/manhua-zhanchihongzhitong.htm"
-    //);
+async function main() {
+    const values = Object.values(websites);
+    for (let index = 0; index < values.length; index++) {
+        const website = values[index];
+        const scraper = new website();
+        console.log(index, scraper.Identifier);
+        const mangas = await scraper.FetchMangas(fakeProvider);
+        //const manga = await scraper.FetchManga(
+            //undefined as unknown as MangaPlugin,
+            //"https://comic.acgn.cc/manhua-zhanchihongzhitong.htm"
+        //);
 
-    const chapters = await scraper.FetchChapters(mangas[0]);
-    const chapter = chapters[0];
-    await chapter.Update();
-    const pages = chapter.Entries.Value;
-    const blob = await pages[0].Fetch(
-        0,
-        new AbortController().signal
-    );
-    const buffer = Buffer.from(await blob.arrayBuffer());
-    await fs.promises.writeFile(scraper.Identifier, buffer);
+        console.log(mangas[0].Identifier);
+        const chapters = await scraper.FetchChapters(mangas[0]);
+        const chapter = chapters[0];
+        await chapter.Update();
+        const pages = chapter.Entries.Value;
+        const blob = await pages[0].Fetch(
+            0,
+            new AbortController().signal
+        );
+        const buffer = Buffer.from(await blob.arrayBuffer());
+        await fs.promises.writeFile(scraper.Identifier, buffer);
+    }
 }
-
+main();
 
