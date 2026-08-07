@@ -1,1 +1,1 @@
-npx esbuild test.ts --bundle --platform=node --format=cjs --outfile=test .cjs --loader:.webp=file --loader:.svelte=file --loader:.proto=file --packages=external && node test.cjs
+npx esbuild test.ts --bundle --platform=node --format=cjs --outfile=test.cjs --loader:.webp=dataurl --loader:.svelte=text --loader:.proto=text --packages=external && node test.cjs
