@@ -31,8 +31,5 @@
         "test:websites": "npm run build --workspaces && vitest run --config=test/vitest.websites.js",
         "npm:clean-install": "npm update --package-lock-only && npm clean-install",
         "postinstall": "npm --workspace=app/electron exec electron -- --no-sandbox --version"
-    },
-    "dependencies": {
-        "jsdom": "^30.0.1"
     }
 }

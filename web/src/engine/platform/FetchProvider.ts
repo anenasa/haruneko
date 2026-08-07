@@ -4,16 +4,20 @@ import { Runtime } from './PlatformInfo';
 import { PlatformInstanceActivator } from './PlatformInstanceActivator';
 import NodeWebkitFetchProvider from './nw/FetchProvider';
 import ElectronFetchProvider from './electron/FetchProvider';
-import NodeFetchProvider from './node/FetchProvider';
+import CustomFetchProvider from './custom/FetchProvider';
 import GetIPC from './InterProcessCommunication';
 
 let instance: FetchProvider;
+
+export function SetupCustomFetchProvider() {
+    instance = new CustomFetchProvider();
+    instance.Initialize(undefined as any);
+}
 
 export function SetupFetchProvider(featureFlags: FeatureFlags) {
     instance = new PlatformInstanceActivator<FetchProvider>()
         .Configure(Runtime.NodeWebkit, () => new NodeWebkitFetchProvider())
         .Configure(Runtime.Electron, () => new ElectronFetchProvider(GetIPC()))
-        .Configure(Runtime.Node, () => new NodeFetchProvider())
         .Create();
     instance.Initialize(featureFlags);
 }

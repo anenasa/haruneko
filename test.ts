@@ -1,12 +1,11 @@
-import fs from 'node:fs';
 import "./web/src/engine/RegExpSafe.ts";
 import "./web/src/engine/ArrayExtensions.ts";
 import * as websites from './web/src/engine/websites/_index';
 //import { CreateStorageController } from "./web/src/engine/StorageController.ts";
 //import { SettingsManager } from "./web/src/engine/SettingsManager.ts";
-import { SetupFetchProvider } from "./web/src/engine/platform/FetchProvider.ts";
+import { SetupCustomFetchProvider } from "./web/src/engine/platform/FetchProvider.ts";
 
-SetupFetchProvider(undefined);
+SetupCustomFetchProvider(undefined);
 
 //const storageController = CreateStorageController();
 //const settingsManager = new SettingsManager(storageController);
@@ -29,13 +28,14 @@ async function main() {
         const scraper = new website();
         console.log(index, scraper.Identifier);
         const mangas = await scraper.FetchMangas(fakeProvider);
+        console.log(mangas[0].Identifier);
+        const manga = mangas[0];
         //const manga = await scraper.FetchManga(
             //undefined as unknown as MangaPlugin,
             //"https://comic.acgn.cc/manhua-zhanchihongzhitong.htm"
         //);
 
-        console.log(mangas[0].Identifier);
-        const chapters = await scraper.FetchChapters(mangas[0]);
+        const chapters = await scraper.FetchChapters(manga);
         const chapter = chapters[0];
         await chapter.Update();
         const pages = chapter.Entries.Value;
@@ -43,8 +43,15 @@ async function main() {
             0,
             new AbortController().signal
         );
-        const buffer = Buffer.from(await blob.arrayBuffer());
-        await fs.promises.writeFile(scraper.Identifier, buffer);
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = scraper.Identifier;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
     }
 }
 main();

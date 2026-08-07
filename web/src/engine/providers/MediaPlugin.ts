@@ -6,7 +6,6 @@ import icon from '../../img/media.webp';
 import { NotImplementedError } from '../Error';
 import { FetchWindowScript } from '../platform/FetchProvider';
 import { Observable, ObservableArray, type IObservable } from '../Observable';
-import { JSDOM } from "jsdom";
 
 export type MediaChild = MediaContainer<MediaChild> | MediaItem;
 
@@ -122,14 +121,6 @@ export abstract class MediaScraper<T extends MediaContainer<MediaChild>> {
     public constructor(public readonly Identifier: string, public readonly Title: string, url: string, ...tags: Tag[]) {
         this.URI = new URL(url);
         this.Tags = tags;
-        if (!globalThis.DOMParser) {
-            const dom = new JSDOM("", {
-                url: url
-            });
-            globalThis.DOMParser = dom.window.DOMParser;
-            globalThis.HTMLAnchorElement = dom.window.HTMLAnchorElement;
-            globalThis.HTMLMetaElement = dom.window.HTMLMetaElement;
-        }
     }
 
     public abstract CreatePlugin(storageController: StorageController, settingsManager: SettingsManager): T;
