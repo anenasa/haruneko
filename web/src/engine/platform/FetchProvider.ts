@@ -9,15 +9,12 @@ import GetIPC from './InterProcessCommunication';
 
 let instance: FetchProvider;
 
-export function SetupCustomFetchProvider() {
-    instance = new CustomFetchProvider();
-    instance.Initialize(undefined as any);
-}
-
 export function SetupFetchProvider(featureFlags: FeatureFlags) {
     instance = new PlatformInstanceActivator<FetchProvider>()
         .Configure(Runtime.NodeWebkit, () => new NodeWebkitFetchProvider())
         .Configure(Runtime.Electron, () => new ElectronFetchProvider(GetIPC()))
+        .Configure(Runtime.Gecko, () => new CustomFetchProvider(GetIPC()))
+        .Configure(Runtime.Chrome, () => new CustomFetchProvider(GetIPC()))
         .Create();
     instance.Initialize(featureFlags);
 }
