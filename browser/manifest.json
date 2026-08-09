@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "Haruneko helper",
+  "version": "1.0",
+  "description": "Haruneko helper",
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "type": "module"
+  }
+}
