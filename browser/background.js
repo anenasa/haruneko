@@ -1,7 +1,9 @@
 const haruneko_domain = "localhost:5000";
 
+// Fix request headers
 browser.webRequest.onBeforeSendHeaders.addListener((details) => {
     if(!details.documentUrl?.includes(haruneko_domain)) return {};
+    if(details.frameId == 0) return {};
     const fetchApiSupportedPrefix = 'X-FetchAPI-'.toLowerCase();
     const oldHeaders = details.requestHeaders || [];
     const newHeaders = [];
@@ -40,6 +42,7 @@ function setHeader(headers, name, value) {
   }
 }
 
+// Enable CORS
 browser.webRequest.onHeadersReceived.addListener((details) => {
     if(!details.documentUrl?.includes(haruneko_domain)) return {};
     const headers = details.responseHeaders || [];
