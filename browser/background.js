@@ -52,3 +52,17 @@ browser.webRequest.onHeadersReceived.addListener((details) => {
     setHeader(headers, "Access-Control-Max-Age", "7200");
     return { responseHeaders: headers };
 }, { urls: ["<all_urls>"] }, [ "blocking", "responseHeaders" ]);
+
+browser.webNavigation.onCommitted.addListener(async (details) => {
+    if (details.frameId === 0) return;
+    const mainFrame = await browser.webNavigation.getFrame({
+      tabId: details.tabId,
+      frameId: 0
+    }).catch(() => null);
+    if (!mainFrame) return;
+    if (!mainFrame.url.includes(haruneko_domain)) return;
+    browser.tabs.executeScript(details.tabId, {
+        file: "content_script.js",
+        frameId: details.frameId
+    });
+});

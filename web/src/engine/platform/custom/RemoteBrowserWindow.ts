@@ -62,14 +62,14 @@ export default class RemoteBrowserWindow implements IRemoteBrowserWindow {
 
     public async ExecuteScript<T extends void | JSONElement>(script: string = ''): Promise<T> {
         return new Promise((resolve, reject) => {
-            const requestId = crypto.randomUUID();
+            const executeScriptId = crypto.randomUUID();
             function handler(event) {
-                if (event.data?.requestId !== requestId) return;
+                if (event.data?.executeScriptReturnId !== executeScriptId) return;
                 window.removeEventListener("message", handler);
                 resolve(event.data.result);
             }
             window.addEventListener("message", handler);
-            this.iframe.contentWindow.postMessage({requestId, script}, "*");
+            this.iframe.contentWindow.postMessage({executeScriptId, script}, "*");
         })
     }
 
