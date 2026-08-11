@@ -4,6 +4,7 @@ const haruneko_domain = "localhost:5000";
 browser.webRequest.onBeforeSendHeaders.addListener((details) => {
     if(!details.documentUrl?.includes(haruneko_domain)) return {};
     if(details.frameId == 0) return {};
+    if (details.url.includes(haruneko_domain)) return {};
     const fetchApiSupportedPrefix = 'X-FetchAPI-'.toLowerCase();
     const oldHeaders = details.requestHeaders || [];
     const newHeaders = [];
