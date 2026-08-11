@@ -54,8 +54,8 @@ browser.webRequest.onHeadersReceived.addListener((details) => {
     return { responseHeaders: headers };
 }, { urls: ["<all_urls>"] }, [ "blocking", "responseHeaders" ]);
 
+// Inject content_script to haruneko, including iframe
 browser.webNavigation.onCommitted.addListener(async (details) => {
-    if (details.frameId === 0) return;
     const mainFrame = await browser.webNavigation.getFrame({
       tabId: details.tabId,
       frameId: 0
@@ -67,3 +67,33 @@ browser.webNavigation.onCommitted.addListener(async (details) => {
         frameId: details.frameId
     });
 });
+
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'forwardFetch' && message.fetchRequestId !== undefined) {
+        handleForwardFetch(message.serialized).then(sendResponse);
+        return true;
+    }
+});
+
+// Calling fetch from extension
+async function handleForwardFetch(serialized) {
+    try {
+        const { url, method, mode, headers, bodyUsed, body, credentials } = serialized;
+        const request = new Request(url, {
+            method,
+            headers: new Headers(headers),
+            body: bodyUsed ? body : undefined,
+            credentials
+        });
+        const response = await fetch(request);
+        return {
+            ok: response.ok,
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers),
+            body: await response.arrayBuffer()
+        };
+    } catch (error) {
+        return { ok: false, error: error.message };
+    }
+}

@@ -57,7 +57,36 @@ export default class extends FetchProvider {
     }
 
     async Fetch(request: Request): Promise<Response> {
-        const response = await fetch(request);
+        // Serialize request and send to helper extension to avoid CORS preflight request
+        const serialized = {
+            url: request.url,
+            method: request.method,
+            headers: Object.fromEntries(request.headers),
+            body: await request.arrayBuffer(),
+            bodyUsed: request.bodyUsed,
+            credentials: request.credentials,
+        }
+        const result = await new Promise((resolve, reject) => {
+            const fetchRequestId = crypto.randomUUID();
+            function handler(event) {
+                if (event.data?.fetchResponseId !== fetchRequestId) return;
+                window.removeEventListener("message", handler);
+                const result = event.data.result;
+                if (result.error) {
+                    reject(new Error(result.error));
+                }
+                else {
+                    resolve(result);
+                }
+            }
+            window.addEventListener("message", handler);
+            window.postMessage({type: "fetch", fetchRequestId, serialized}, "*");
+        });
+        const response = new Response(result.body || null, {
+            status: result.status || 200,
+            statusText: result.statusText || 'OK',
+            headers: new Headers(result.headers)
+        });
         await super.ValidateResponse(response);
         return response;
     }

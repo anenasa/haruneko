@@ -69,7 +69,7 @@ export default class RemoteBrowserWindow implements IRemoteBrowserWindow {
                 resolve(event.data.result);
             }
             window.addEventListener("message", handler);
-            this.iframe.contentWindow.postMessage({executeScriptId, script}, "*");
+            this.iframe.contentWindow.postMessage({type: "executeScript", executeScriptId, script}, "*");
         })
     }
 
