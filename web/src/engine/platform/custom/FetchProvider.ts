@@ -82,7 +82,7 @@ export default class extends FetchProvider {
             window.addEventListener("message", handler);
             window.postMessage({type: "fetch", fetchRequestId, serialized}, "*");
         });
-        const response = new Response(result.body || null, {
+        const response = new Response(new Uint8Array(result.body) || null, {
             status: result.status || 200,
             statusText: result.statusText || 'OK',
             headers: new Headers(result.headers)

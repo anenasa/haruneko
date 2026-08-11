@@ -1,15 +1,18 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Haruneko helper",
   "version": "1.0",
   "description": "Haruneko helper",
   "permissions": [
     "webRequest",
-    "webRequestBlocking",
     "webNavigation",
+    "scripting"
+  ],
+  "host_permissions": [
     "<all_urls>"
   ],
   "background": {
+    "service_worker": "background.js",
     "scripts": [
       "background.js"
     ]
