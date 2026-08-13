@@ -1,11 +1,15 @@
-const haruneko_domain = "localhost:5000";
-const extension_url = browser.runtime.getURL("");
+(async () => {
+const settings = await browser.storage.local.get({
+    harunekoUrl: "https://anenasa.github.io"
+});
+const harunekoUrl = settings.harunekoUrl;
+const extensionUrl = browser.runtime.getURL("");
 
 // Fix request headers
 browser.webRequest.onBeforeSendHeaders.addListener((details) => {
-    if (!details.documentUrl?.includes(haruneko_domain) && !details.documentUrl?.includes(extension_url))
+    if (!details.documentUrl?.includes(harunekoUrl) && !details.documentUrl?.includes(extensionUrl))
         return {};
-    if (details.url.includes(haruneko_domain)) return {};
+    if (details.url.includes(harunekoUrl)) return {};
     const fetchApiSupportedPrefix = 'X-FetchAPI-'.toLowerCase();
     const oldHeaders = details.requestHeaders || [];
     const newHeaders = [];
@@ -15,8 +19,8 @@ browser.webRequest.onBeforeSendHeaders.addListener((details) => {
         if (header.name.toLowerCase().startsWith(fetchApiSupportedPrefix)) {
             removeList.push(header.name.toLowerCase().substring(fetchApiSupportedPrefix.length));
         }
-        // Avoid haruneko_domain in referer/origin
-        if (header.value.includes(haruneko_domain)) {
+        // Avoid harunekoUrl in referer/origin
+        if (header.value.includes(harunekoUrl)) {
             removeList.push(header.name.toLowerCase());
         }
         if (header.name.toLowerCase() == "sec-fetch-dest" && header.value == "iframe") {
@@ -52,7 +56,7 @@ function setHeader(headers, name, value) {
 
 // Enable CORS
 browser.webRequest.onHeadersReceived.addListener((details) => {
-    if(!details.documentUrl?.includes(haruneko_domain)) return {};
+    if(!details.documentUrl?.includes(harunekoUrl)) return {};
     const headers = details.responseHeaders || [];
     setHeader(headers, "Access-Control-Allow-Origin", "*");
     setHeader(headers, "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
@@ -69,7 +73,7 @@ browser.webNavigation.onCommitted.addListener(async (details) => {
       frameId: 0
     }).catch(() => null);
     if (!mainFrame) return;
-    if (!mainFrame.url.includes(haruneko_domain)) return;
+    if (!mainFrame.url.includes(harunekoUrl)) return;
     browser.tabs.executeScript(details.tabId, {
         file: "content_script.js",
         frameId: details.frameId
@@ -107,3 +111,4 @@ async function handleForwardFetch(serialized) {
         return { ok: false, error: error.message };
     }
 }
+})();
