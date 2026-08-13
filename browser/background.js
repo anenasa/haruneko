@@ -1,9 +1,10 @@
 const haruneko_domain = "localhost:5000";
+const extension_url = browser.runtime.getURL("");
 
 // Fix request headers
 browser.webRequest.onBeforeSendHeaders.addListener((details) => {
-    if(!details.documentUrl?.includes(haruneko_domain)) return {};
-    if(details.frameId == 0) return {};
+    if (!details.documentUrl?.includes(haruneko_domain) && !details.documentUrl?.includes(extension_url))
+        return {};
     if (details.url.includes(haruneko_domain)) return {};
     const fetchApiSupportedPrefix = 'X-FetchAPI-'.toLowerCase();
     const oldHeaders = details.requestHeaders || [];
