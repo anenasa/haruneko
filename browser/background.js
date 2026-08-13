@@ -63,6 +63,7 @@ browser.webRequest.onHeadersReceived.addListener((details) => {
 
 // Inject content_script to haruneko, including iframe
 browser.webNavigation.onCommitted.addListener(async (details) => {
+    if (details.url == "about:blank") return;
     const mainFrame = await browser.webNavigation.getFrame({
       tabId: details.tabId,
       frameId: 0
