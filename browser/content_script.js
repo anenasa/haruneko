@@ -1,5 +1,5 @@
 window.addEventListener("message", async (event) => {
-    if (event.origin != "https://localhost:5000" || event.source !== window) return;
+    if (event.origin != "https://localhost:5000") return;
     const type = event.data.type;
     if (type === 'executeScript') handleExecuteScript(event);
     if (type === 'fetch') handleFetch(event);
