@@ -66,6 +66,8 @@ browser.webNavigation.onCommitted.addListener(async (details) => {
     browser.tabs.executeScript(details.tabId, {
         file: "content_script.js",
         frameId: details.frameId
+    }).catch(error => {
+        console.error('inject error', error);
     });
 });
 
