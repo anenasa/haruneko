@@ -1,4 +1,5 @@
 import type { IPC } from '../InterProcessCommunication';
+import { Observable, type IObservable } from '../../Observable';
 import type { IAppWindow } from '../AppWindow';
 import { ApplicationWindow as Channels } from '../../../../../app/src/ipc/Channels';
 
@@ -14,8 +15,9 @@ export default class implements IAppWindow {
         return false;
     }
 
+    readonly #maximized = new Observable<boolean, IAppWindow>(null, this);
     public get Maximized(): IObservable<boolean, IAppWindow> {
-        return true;
+        return this.#maximized;
     }
 
     public Minimize(): void {}
