@@ -19,6 +19,12 @@ browser.webRequest.onBeforeSendHeaders.addListener((details) => {
         if (header.value.includes(haruneko_domain)) {
             removeList.push(header.name.toLowerCase());
         }
+        if (header.name.toLowerCase() == "sec-fetch-dest" && header.value == "iframe") {
+            header.value = "document";
+        }
+        if (header.name.toLowerCase() == "sec-fetch-site" && header.value == "cross-site") {
+            header.value = "none";
+        }
     }
     for (const header of oldHeaders) {
         if (header.name.toLowerCase().startsWith(fetchApiSupportedPrefix)) {
