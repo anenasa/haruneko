@@ -8,7 +8,7 @@ window.addEventListener("message", async (event) => {
 async function handleExecuteScript(event) {
     const { executeScriptId, script } = event.data;
     if (!executeScriptId) return;
-    const result = await eval(script);
+    const result = await window.eval(script);
     window.parent.postMessage({executeScriptReturnId: executeScriptId, result}, "*");
 }
 
