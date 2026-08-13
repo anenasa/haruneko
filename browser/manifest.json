@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Haruneko helper",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Haruneko helper",
   "permissions": [
     "webRequest",

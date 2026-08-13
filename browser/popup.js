@@ -6,7 +6,8 @@
         harunekoUrl.value = settings.harunekoUrl;
     });
 
-    document.querySelector("#open").addEventListener("click", () => {
+    document.querySelector("form").addEventListener("submit", (event) => {
+        event.preventDefault();
         browser.storage.local.set({
             harunekoUrl: harunekoUrl.value
         });
