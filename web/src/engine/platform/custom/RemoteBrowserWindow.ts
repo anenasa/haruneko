@@ -31,6 +31,7 @@ export default class RemoteBrowserWindow implements IRemoteBrowserWindow {
         console.warn('referrer, headers, preload not implemented');
         this.iframe = document.createElement("iframe");
         this.iframe.src = request.url;
+        this.iframe.referrerPolicy = 'no-referrer';
         Object.assign(this.iframe.style, {
             position: "fixed",
             inset: "0",
