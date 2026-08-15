@@ -98,13 +98,6 @@
     }
 
     async function addDownload(item: StoreableMediaContainer<MediaItem>) {
-        try {
-            await HakuNeko.SettingsManager.OpenScope().Get<Directory>(GlobalKey.MediaDirectory).EnsureAccess();
-        } catch(error) {
-            // TODO: Use appropriate error visualization ...
-            alert(error?.message ?? error);
-            return;
-        }
         await window.HakuNeko.DownloadManager.Enqueue(item);
     }
 

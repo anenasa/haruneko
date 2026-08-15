@@ -9,6 +9,7 @@
     "webNavigation",
     "storage",
     "tabs",
+    "downloads",
     "<all_urls>"
   ],
   "background": {
