@@ -3,6 +3,7 @@ import { type StorageController, Store } from './StorageController';
 import { Observable } from './Observable';
 import { Scope } from './SettingsGlobal';
 import { Exception } from './Error';
+import { Runtime, PlatformInfo } from './platform/PlatformInfo';
 
 //const secret = 'E8463362D9B817D3956F054D01093EC6'; // MD5('simple.encryption.key.for.secret.settings')
 
@@ -148,9 +149,12 @@ export class Numeric extends Setting<number> {
 }
 
 export class Directory extends Setting<FileSystemDirectoryHandle> {
+    private readonly runtime: Runtime;
 
     constructor(id: string, label: keyof IResource, description: keyof IResource, initial: FileSystemDirectoryHandle) {
         super(id, label, description, initial);
+        const info = new PlatformInfo();
+        this.runtime = info.Runtime;
     }
 
     /**
@@ -159,6 +163,7 @@ export class Directory extends Setting<FileSystemDirectoryHandle> {
      * @throws {@link Exception} if the directory is not set or the permission for write access was denied
      */
     public async EnsureAccess(): Promise<void> {
+        if(this.runtime === Runtime.Gecko) return;
         if(!this.Value) {
             throw new Exception(EngineResourceKey.Settings_Global_MediaDirectory_UnsetError);
         }

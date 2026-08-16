@@ -140,6 +140,10 @@
             fetchProviderFetch(message.parameters).then(sendResponse);
             return true;
         }
+        if (message.channel === "FileSystem.close") {
+            downloadFile(message.parameters).then(sendResponse);
+            return true;
+        }
     });
 
     async function openTab(parameters, senderId) {
@@ -249,5 +253,53 @@
                 error: error.message
             };
         }
+    }
+
+    // Calling download from extension
+    async function downloadFile(parameters) {
+        const [blob, filename] = parameters;
+        const url = URL.createObjectURL(blob);
+        let id;
+        try {
+            id = await browser.downloads.download({
+                url,
+                filename,
+                saveAs: false
+            });
+        } catch (error) {
+            URL.revokeObjectURL(url);
+            return { error: error.message };
+        }
+        const result = await new Promise((resolve) => {
+            let settled = false;
+            const finish = (result) => {
+                if (settled) return;
+                settled = true;
+                browser.downloads.onChanged.removeListener(listener);
+                URL.revokeObjectURL(url);
+                resolve(result);
+            };
+            const listener = (delta) => {
+                if (delta.id !== id) return;
+                if (delta.state?.current === "complete") {
+                    finish({ result: true });
+                }
+                if (delta.state?.current === "interrupted") {
+                    finish({ error: "interrupted" });
+                }
+            };
+
+            browser.downloads.onChanged.addListener(listener);
+            browser.downloads.search({id}).then((downloads) => {
+                if (downloads[0]?.state === "complete") {
+                    finish({success: true});
+                } else if (downloads[0]?.state === "interrupted") {
+                    finish({ error: "interrupted" });
+                }
+            }).catch((error) => {
+                finish({ error: error.message });
+            });
+        });
+        return result;
     }
 })();
