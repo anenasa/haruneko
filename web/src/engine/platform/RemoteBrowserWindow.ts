@@ -3,6 +3,7 @@ import { Runtime } from './PlatformInfo';
 import { PlatformInstanceActivator } from './PlatformInstanceActivator';
 import NodeWebkitRemoteBrowserWindow from './nw/RemoteBrowserWindow';
 import ElectronRemoteBrowserWindow from './electron/RemoteBrowserWindow';
+import FirefoxRemoteBrowserWindow from './firefox/RemoteBrowserWindow';
 import GetIPC from './InterProcessCommunication';
 
 export interface IRemoteBrowserWindow {
@@ -28,5 +29,6 @@ export function CreateRemoteBrowserWindow(): IRemoteBrowserWindow {
     return new PlatformInstanceActivator<IRemoteBrowserWindow>()
         .Configure(Runtime.NodeWebkit, () => new NodeWebkitRemoteBrowserWindow())
         .Configure(Runtime.Electron, () => new ElectronRemoteBrowserWindow(GetIPC()))
+        .Configure(Runtime.Gecko, () => new FirefoxRemoteBrowserWindow(GetIPC()))
         .Create();
 }
