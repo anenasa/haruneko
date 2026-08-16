@@ -77,6 +77,10 @@
             handleForwardFetch(message.serialized).then(sendResponse);
             return true;
         }
+        if (message.type === 'forwardDownload' && message.downloadId !== undefined) {
+            handleForwardDownload(message.blob, message.filename).then(sendResponse);
+            return true;
+        }
     });
 
     // Calling fetch from extension
@@ -100,5 +104,52 @@
         } catch (error) {
             return { ok: false, error: error.message };
         }
+    }
+
+    // Calling download from extension
+    async function handleForwardDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        let id;
+        try {
+            id = await browser.downloads.download({
+                url,
+                filename,
+                saveAs: false
+            });
+        } catch (error) {
+            URL.revokeObjectURL(url);
+            return {success: false, error: error.message};
+        }
+        const result = await new Promise((resolve) => {
+            let settled = false;
+            const finish = (result) => {
+                if (settled) return;
+                settled = true;
+                browser.downloads.onChanged.removeListener(listener);
+                URL.revokeObjectURL(url);
+                resolve(result);
+            };
+            const listener = (delta) => {
+                if (delta.id !== id) return;
+                if (delta.state?.current === "complete") {
+                    finish({success: true});
+                }
+                if (delta.state?.current === "interrupted") {
+                    finish({success: false, error: "interrupted"});
+                }
+            };
+
+            browser.downloads.onChanged.addListener(listener);
+            browser.downloads.search({id}).then((downloads) => {
+                if (downloads[0]?.state === "complete") {
+                    finish({success: true});
+                } else if (downloads[0]?.state === "interrupted") {
+                    finish({success: false, error: "interrupted"});
+                }
+            }).catch((error) => {
+                finish({success: false, error: error.message});
+            });
+        });
+        return result;
     }
 })();
