@@ -23,13 +23,19 @@
     function OnValueChanged(newValue: string) {
         value = newValue;
     }
+
+    $effect(() => {
+        if (value !== setting.Value) {
+            setting.Value = value;
+        }
+    });
 </script>
 
 <SettingItem
     labelText={GlobalSettings.Locale[setting.Label]()}
     helperText={GlobalSettings.Locale[setting.Description]()}
 >
-    <Select bind:selected={value} onchange={(e) => (setting.Value = value)}>
+    <Select bind:selected={value}>
         {#each setting.Options as option}
             <SelectItem value={option.key} text={GlobalSettings.Locale[option.label]()} />
         {/each}
