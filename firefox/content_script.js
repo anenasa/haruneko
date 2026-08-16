@@ -5,6 +5,7 @@ window.addEventListener("message", async (event) => {
     if (event.origin != settings.hakunekoUrl) return;
     const type = event.data.type;
     if (type === 'executeScript') handleExecuteScript(event);
+    else if (type === 'fetch') handleFetch(event);
 });
 
 async function handleExecuteScript(event) {
@@ -22,4 +23,11 @@ async function handleExecuteScript(event) {
             error: error.message
         }, "*");
     }
+}
+
+async function handleFetch(event) {
+    const { fetchRequestId, serialized } = event.data;
+    if (fetchRequestId === undefined) return;
+    const result = await browser.runtime.sendMessage({type: "forwardFetch", fetchRequestId, serialized});
+    window.postMessage({fetchResponseId: fetchRequestId, result}, "*");
 }
