@@ -2,6 +2,7 @@ import { Runtime } from './PlatformInfo';
 import { PlatformInstanceActivator } from './PlatformInstanceActivator';
 import NodeWebkitIPC from './nw/InterProcessCommunication';
 import ElectronIPC from './electron/InterProcessCommunication';
+import FirefoxIPC from './firefox/InterProcessCommunication';
 
 export type Callback = (...parameters: JSONArray) => Promise<void>;
 
@@ -17,6 +18,7 @@ export default function GetIPC() {
         instance = new PlatformInstanceActivator<IPC<string, string>>()
             .Configure(Runtime.NodeWebkit, () => new NodeWebkitIPC())
             .Configure(Runtime.Electron, () => new ElectronIPC())
+            .Configure(Runtime.Gecko, () => new FirefoxIPC())
             .Create();
     }
     return instance;
