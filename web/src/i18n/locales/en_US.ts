@@ -112,6 +112,10 @@ const translations: VariantResource = {
   Frontend_Classic_StartupGuide_Download_Title: 'Download Settings',
   Frontend_Classic_StartupGuide_Download_Description: 'Select the download location and file format',
 
+  // [SECTION]: Frontend Classic Mobile
+  Frontend_ClassicMobile_Label: 'Classic Mobile',
+  Frontend_ClassicMobile_Description: 'Classic frontend with modifications for mobile device',
+
   // [SECTION]: Frontend FluentCore
 
   Frontend_FluentCore_Label: 'Fluent Core',

@@ -206,6 +206,12 @@ export enum FrontendResourceKey {
     Frontend_Classic_StartupGuide_Viewer_Vertical_SubDescription = 'Frontend_Classic_StartupGuide_Viewer_Vertical_SubDescription',
 }
 
+// [SECTION]: Frontend: Classic Mobile
+export enum FrontendResourceKey {
+    Frontend_ClassicMobile_Label = 'Frontend_ClassicMobile_Label',
+    Frontend_ClassicMobile_Description = 'Frontend_ClassicMobile_Description',
+}
+
 // [SECTION]: Frontend: FluentCore
 export enum FrontendResourceKey {
     Frontend_FluentCore_Label = 'Frontend_FluentCore_Label',

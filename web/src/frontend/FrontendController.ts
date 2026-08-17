@@ -1,5 +1,6 @@
 import type { IFrontendInfo } from './IFrontend';
 import { Info as InfoClassic } from './classic/FrontendInfo';
+import { Info as InfoClassicMobile } from './classic-mobile/FrontendInfo';
 import { Info as InfoFluentCore } from './fluent-core/FrontendInfo';
 import type { Choice, ISettings } from '../engine/SettingsManager';
 import { Key } from '../engine/SettingsGlobal';
@@ -8,6 +9,7 @@ import { Observable, type IObservable } from '../engine/Observable';
 
 export const FrontendList: IFrontendInfo[] = [
     InfoClassic,
+    InfoClassicMobile,
     InfoFluentCore,
 ];
 
