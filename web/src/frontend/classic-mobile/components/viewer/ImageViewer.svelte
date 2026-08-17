@@ -39,17 +39,67 @@
         viewer?.removeEventListener('scroll', onScroll);
     });
 
-    let { item, currentImageIndex, wide = $bindable(), onNextItem, onPreviousItem, onClose }: Props = $props();
+    let { item, currentImageIndex = $bindable(0), wide = $bindable(), onNextItem, onPreviousItem, onClose }: Props = $props();
     let entries = $derived(item.Entries.Value);
     let viewer: HTMLElement;
+    const isPaginated = $derived(Settings.ViewerMode.Value === 'paginated');
 
     function viewerclose() {
         wide = false;
         onClose();
     }
 
+    function nextPage() {
+        if (currentImageIndex < entries.length - 1) currentImageIndex++;
+        else onNextItemCallback();
+    }
+
+    function previousPage() {
+        if (currentImageIndex > 0) currentImageIndex--;
+    }
+
+    function onPageClick(event: MouseEvent) {
+        if (!wide || !isPaginated) return;
+
+        const target = event.currentTarget as HTMLElement;
+        const rect = target.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+
+        if (clickX < rect.width / 3) {
+            previousPage();
+        } else if (clickX > rect.width * 2/ 3) {
+            nextPage();
+        }
+    }
+
+    function onWheel(event: WheelEvent) {
+        if (!wide || !isPaginated) return;
+
+        event.preventDefault();
+        if (event.deltaY > 0) {
+            nextPage();
+        } else if (event.deltaY < 0) {
+            previousPage();
+        }
+    }
+
     function onKeyDown(event: KeyboardEvent) {
         switch (true) {
+            case isPaginated && (
+                event.code === 'ArrowUp' ||
+                event.code === 'PageUp'
+            ):
+                previousPage();
+                event.preventDefault();
+                break;
+
+            case isPaginated && (
+                event.code === 'ArrowDown' ||
+                event.code === 'PageDown'
+            ):
+                nextPage();
+                event.preventDefault();
+                break;
             case event.code === 'ArrowUp':
                 scrollSmoothly(viewer, -64);
                 break;
@@ -81,6 +131,7 @@
                 break;
             case event.key === '/':
                 Settings.ViewerZoom.Value=Settings.ViewerZoom.Setting.Default;
+                event.preventDefault();
                 break;
             case event.key === '+' && !event.ctrlKey:
                 Settings.ViewerZoom.Increment();
@@ -138,7 +189,11 @@
     // Entering wide mode : scroll to image
     $effect(() => {
         if (wide) {
-            if (currentImageIndex != -1) {
+            if (isPaginated) {
+                if (currentImageIndex === -1) {
+                    currentImageIndex = 0;
+                }
+            } else if (currentImageIndex != -1) {
                 // delay because of smooth transition
                 setTimeout(() => {
                     const targetScrollImage =
@@ -176,9 +231,24 @@
 <div
     id="ImageViewer"
     bind:this={viewer}
+    onclick={onPageClick}
+    onwheel={onWheel}
     role="button"
     tabindex="-1"
-    ondblclick={() => toggleFullScreen()}
+    ondblclick={(event) => {
+        if (!isPaginated) {
+            toggleFullScreen();
+            return;
+        }
+        const rect = viewer.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        if (
+            clickX >= rect.width / 3 &&
+            clickX <= rect.width * 2 / 3
+        ) {
+            toggleFullScreen();
+        }
+    }}
     transition:fade
     class:wide={wide}
     class:reverse={Settings.ViewerReverseDirection.Value}
@@ -199,22 +269,30 @@
         </div>
     {/if}
 
-    {#each entries as content, index (index)}
-        <button
-            onclick={() => {
-                currentImageIndex = index;
-                wide = true;
-            }}
-            in:send={{ key: index }}
-            out:receive={{ key: index }}
-        >
-            <Image
-                {wide}
-                alt="content_{index}"
-                page={content}
-            />
-        </button>
-    {/each}
+    {#if wide && isPaginated}
+        {#each entries as content, index (index)}
+            <div class="page-frame" class:hidden={index !== currentImageIndex}>
+                <Image {wide} alt="content_{index}" page={content} />
+            </div>
+        {/each}
+    {:else}
+        {#each entries as content, index (index)}
+            <button
+                onclick={() => {
+                    currentImageIndex = index;
+                    wide = true;
+                }}
+                in:send={{ key: index }}
+                out:receive={{ key: index }}
+            >
+                <Image
+                    {wide}
+                    alt="content_{index}"
+                    page={content}
+                />
+            </button>
+        {/each}
+    {/if}
 </div>
 {#if autoNextItem && UI.selectedItemNext !== undefined}
     <div  style="z-index: 20000; position: fixed; bottom: 2em; right: 2em;" transition:fade>
@@ -280,11 +358,25 @@
     }
     #ImageViewer.wide.paginated {
         display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
         align-items: center;
+        width: 100%;
         height: 100%;
-        overflow-x: auto;
+        overflow: hidden;
+    }
+    #ImageViewer.wide.paginated .page-frame {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
+    #ImageViewer.wide.paginated .page-frame.hidden {
+        display: none !important;
+    }
+    #ImageViewer.wide.paginated :global(img.imgpreview) {
+        width: calc(var(--image-zoom) * 100%);
+        height: calc(var(--image-zoom) * 100%);
+        object-fit: contain;
     }
     /* TODO: implement RTL reading */
     #ImageViewer.wide.paginated.reverse {
