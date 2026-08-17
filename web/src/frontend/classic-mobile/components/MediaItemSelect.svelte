@@ -22,7 +22,7 @@
     import { Store as UI } from '../stores/Stores.svelte';
     import { Tags, type Tag } from '../../../engine/Tags';
     const availableLanguageTags = Tags.Language.toArray();
-    import { GlobalSettings } from '../stores/Settings.svelte';
+    import { Settings, GlobalSettings } from '../stores/Settings.svelte';
 
     import type {
         StoreableMediaContainer,
@@ -84,6 +84,9 @@
         event.stopPropagation();
         if (item === UI.selectedItem || event.ctrlKey || event.shiftKey) return;
         UI.selectedItem = item;
+        if (Settings.ContentPanel.Value) {
+            UI.navigate('content');
+        }
     };
 
     let itemNameFilter = $state('');
