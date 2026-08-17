@@ -28,10 +28,18 @@
         new Promise<void>((resolve) => (resolveFinishLoading = resolve)),
     ]);
 
-    onMount(async () => {
+    onMount(() => {
+        history.replaceState({ view: UI.view }, '');
+        const handlePopState = (event: PopStateEvent) => {
+            UI.view = event.state?.view ?? 'media';
+        };
+        window.addEventListener('popstate', handlePopState);
         // some delay for pre-rendering
         // Todo: find a way to detect if the UI is loaded
         setTimeout(resolveFinishLoading, 2500);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
     });
 
     let showHome = true;
@@ -54,17 +62,21 @@
         id="hakunekoapp"
         class={Settings.ContentPanel.Value ? 'ui-mode-content' : 'ui-mode-download'}
     >
-        <MediaSelect />
-        <MediaItemSelect />
-        {#if Settings.ContentPanel.Value}
-            <div id="Content" transition:fade>
-                {#if UI.selectedItem}
-                    <Viewer item={UI.selectedItem} />
-                {:else if showHome}
-                    <ContentPage />
-                {/if}
-            </div>
-        {/if}
+        <div id="TopContainer">
+            {#if UI.view === 'media'}
+                <MediaSelect />
+            {:else if UI.view === 'media-item'}
+                <MediaItemSelect />
+            {:else if UI.view === 'content'}
+                <div id="Content" transition:fade>
+                    {#if UI.selectedItem}
+                        <Viewer item={UI.selectedItem} />
+                    {:else if showHome}
+                        <ContentPage />
+                    {/if}
+                </div>
+            {/if}
+        </div>
         <div id="Bottom">
             <DownloadsStatus />
         </div>
@@ -88,25 +100,22 @@
         display: grid;
         padding: 0.5em;
         gap: 0.3em 0.3em;
-        grid-template-rows: 1fr fit-content(0.5em);
+        grid-template-rows: minmax(0, 1fr) auto;
         margin-left: 3rem!important;
     }
-    :global(.ui-mode-content) {
-        grid-template-columns: min-content min-content 1fr;
+    :global(.ui-mode-content), :global(.ui-mode-download) {
+        grid-template-columns: 1fr;
         grid-template-areas:
-            'Media Item Content'
-            'Bottom Bottom Content';
-    }
-    :global(.ui-mode-download) {
-        grid-template-columns: min-content min-content;
-        grid-template-areas:
-            'Media Item'
-            'Bottom Bottom';
+            'TopContainer'
+            'Bottom';
     }
 
     #Content {
-        grid-area: Content;
+        height: 100%;
         overflow-y: auto;
+    }
+    #TopContainer {
+        grid-area: TopContainer;
     }
     #Bottom {
         grid-area: Bottom;

@@ -158,6 +158,7 @@
         onclick={(e: MouseEvent) => {
             e.preventDefault();
             if(!isMediaOrphanedBookmark) UI.selectedMedia = media;
+            UI.navigate('media-item');
         }}
     >
         <span title={media.Title}>{media.Title}</span>
