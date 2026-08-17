@@ -34,7 +34,6 @@
         return { requestHeaders: newHeaders };
     }, { urls: ["<all_urls>"] },  ["blocking", "requestHeaders"]);
 
-    // Enable CORS
     browser.webRequest.onHeadersReceived.addListener((details) => {
         function setHeader(headers, name, value) {
             const existing = headers.find(h => h.name.toLowerCase() === name.toLowerCase());
@@ -46,7 +45,13 @@
         }
 
         if(details.documentUrl !== `${hakunekoUrl}/`) return {};
-        const headers = details.responseHeaders || [];
+
+        // Fix NS_ERROR_XFO_VIOLATION
+        const headers = details.responseHeaders?.filter(
+            h => h.name.toLowerCase() !== "x-frame-options"
+        ) || [];
+
+        // Enable CORS
         setHeader(headers, "Access-Control-Allow-Origin", "*");
         setHeader(headers, "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
         setHeader(headers, "Access-Control-Allow-Headers", "*");
