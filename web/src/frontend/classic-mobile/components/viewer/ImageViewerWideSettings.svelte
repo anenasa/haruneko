@@ -129,7 +129,7 @@
                 {/each}
             </ContentSwitcher>
         </div>
-        {#if Settings.ViewerMode.Value === Key.ViewerMode_Paginated}
+        {#if Settings.ViewerMode.Value === Key.ViewerMode_Paginated || Settings.ViewerMode.Value === Key.ViewerMode_Paged}
             <div class="setting block">
                 <Tooltip
                     triggerText={GlobalSettings.Locale[
