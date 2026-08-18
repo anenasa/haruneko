@@ -103,7 +103,7 @@
         display: grid;
         padding: 0.5em;
         gap: 0.3em 0.3em;
-        grid-template-rows: minmax(0, 1fr) auto;
+        grid-template-rows: minmax(80vh, 1fr) auto;
     }
     :global(.ui-mode-sidenav) {
         margin-left: 3rem!important;
