@@ -28,6 +28,21 @@ class FirefoxWritable {
 
     async close() {
         const blob = new Blob(this.chunks);
+        if (navigator.userAgent.includes('Android')) {
+            // Downloads API not supported on Firefox for Android
+            // https://bugzilla.mozilla.org/show_bug.cgi?id=1538348
+            // Also note that a confirmation dialog is displayed,
+            // if user has not click download before next download starts,
+            // the new one is not started from my test.
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = this.filename;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
+            return;
+        }
+
         const result = await new IPC().Send("FileSystem.close", blob, this.filename);
         if (!result) throw new Error(`${this.filename} write error: ${result.error}`);
     }
