@@ -202,11 +202,8 @@
 
 <style>
     #vieweractions {
-        opacity: 5%;
-        z-index: 8100;
-    }
-    #vieweractions:hover {
         opacity: 100%;
+        z-index: 8100;
     }
     #vieweractions :global(.bx--header__action) {
         position: absolute;
