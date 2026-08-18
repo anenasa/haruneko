@@ -8,7 +8,6 @@ import { NotImplementedError } from '../Error';
 import { CreateChapterExportRegistry } from '../exporters/MangaExporterRegistry';
 import { Observable } from '../Observable';
 import type { Tag } from '../Tags';
-import { FirefoxDirectoryHandle } from '../platform/firefox/FileSystem';
 
 const settingsKeyPrefix = 'plugin.';
 
@@ -182,7 +181,7 @@ export class Chapter extends StoreableMediaContainer<Page> {
         // TODO: Inject settings manager and global scope identifier?
         const settings = HakuNeko.SettingsManager.OpenScope(Scope);
         // Firefox does not support selecting arbitrary download directory
-        let output = new FirefoxDirectoryHandle('Hakuneko');
+        let output = await navigator.storage.getDirectory();
         if(settings.Get<Check>(Key.UseWebsiteSubDirectory).Value && this.Parent?.Parent) {
             const website = SanitizeFileName(this.Parent?.Parent?.Title);
             output = await output.getDirectoryHandle(website, { create: true });

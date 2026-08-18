@@ -5,12 +5,6 @@ import { TaskPool, Priority } from '../taskpool/TaskPool';
 export class ImageDirectoryExporter extends MangaExporter {
 
     public override async Export(sourceFileList: Map<number, string>, targetDirectory: FileSystemDirectoryHandle, chapterTitle: string, _mangaTitle?: string): Promise<void> {
-        if (navigator.userAgent.includes('Android')) {
-            // Not working correctly on Firefox for Android
-            // blob url is opened instead of download
-            alert('Saving as folder not supported');
-            return;
-        }
         const taskPool = new TaskPool(8);
         const digits = sourceFileList.size.toString().length;
         const directory = await targetDirectory.getDirectoryHandle(SanitizeFileName(chapterTitle), { create: true });
