@@ -28,7 +28,29 @@ export default class RemoteBrowserWindow implements IRemoteBrowserWindow {
     }
 
     public async Open(request: Request, show: boolean = false, preload: string = '') {
-        console.warn('referrer, headers, preload not implemented');
+        if (preload) console.warn('preload not implemented');
+
+        // Passing headers to background script
+        await new Promise((resolve, reject) => {
+            const serialized = {
+                url: request.url,
+                headers: Object.fromEntries(request.headers),
+            };
+            const iframeHeaderId = crypto.randomUUID();
+            const timeoutId = setTimeout(() => {
+                window.removeEventListener("message", handler);
+                reject(new Error(`Setting iframe header timed out`));
+            }, 10000);
+            function handler(event) {
+                if (event.data?.iframeHeaderReturnId !== iframeHeaderId) return;
+                clearTimeout(timeoutId);
+                window.removeEventListener("message", handler);
+                resolve();
+            }
+            window.addEventListener("message", handler);
+            window.postMessage({type: "iframeHeader", iframeHeaderId, serialized}, "*");
+        });
+
         this.iframe = document.createElement("iframe");
         this.iframe.src = request.url;
         this.iframe.referrerPolicy = 'no-referrer';

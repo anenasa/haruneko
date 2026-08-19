@@ -7,6 +7,7 @@ window.addEventListener("message", async (event) => {
     if (type === 'executeScript') handleExecuteScript(event);
     else if (type === 'fetch') handleFetch(event);
     else if (type === 'download') handleDownload(event);
+    else if (type === 'iframeHeader') handleIframeHeader(event);
 });
 
 async function handleExecuteScript(event) {
@@ -40,4 +41,11 @@ async function handleDownload(event) {
         type: "forwardDownload", downloadId, blob, filename
     });
     window.postMessage({downloadReturnId: downloadId, result}, "*");
+}
+
+async function handleIframeHeader(event) {
+    const { iframeHeaderId, serialized } = event.data;
+    if (iframeHeaderId === undefined) return;
+    await browser.runtime.sendMessage({type: "forwardIframeHeader", serialized});
+    window.postMessage({iframeHeaderReturnId: iframeHeaderId}, "*");
 }

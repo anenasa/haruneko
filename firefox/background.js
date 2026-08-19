@@ -5,6 +5,8 @@
     const hakunekoUrl = settings.hakunekoUrl;
     const extensionUrl = browser.runtime.getURL("");
 
+    let iframeHeader = undefined;
+
     // Fix request headers
     browser.webRequest.onBeforeSendHeaders.addListener((details) => {
         if (details.documentUrl !== `${hakunekoUrl}/` && !details.documentUrl?.startsWith(extensionUrl))
@@ -14,6 +16,23 @@
         const oldHeaders = details.requestHeaders || [];
         const newHeaders = [];
         const removeSet = new Set();
+
+        // Set headers for web/src/engine/platform/firefox/RemoteBrowserWindow.Open
+        if (details.type === "sub_frame" && details.url === iframeHeader?.url) {
+            for (const [name, value] of Object.entries(iframeHeader.headers)) {
+                if (name.toLowerCase().startsWith(fetchApiSupportedPrefix)) {
+                    const newName = name.substring(fetchApiSupportedPrefix.length);
+                    newHeaders.push({name: newName, value});
+                    removeSet.add(newName.toLowerCase());
+                }
+                else {
+                    newHeaders.push({name, value});
+                    removeSet.add(name.toLowerCase());
+                }
+            }
+            iframeHeader = undefined;
+        }
+
         for (const header of oldHeaders) {
             // Avoid duplicated header entries
             if (header.name.toLowerCase().startsWith(fetchApiSupportedPrefix)) {
@@ -86,6 +105,10 @@
             handleForwardDownload(message.blob, message.filename).then(sendResponse);
             return true;
         }
+        if (message.type === 'forwardIframeHeader') {
+            handleForwardIframeHeader(message.serialized).then(sendResponse);
+            return true;
+        }
     });
 
     // Calling fetch from extension
@@ -156,5 +179,25 @@
             });
         });
         return result;
+    }
+
+    // Store header of iframe
+    async function handleForwardIframeHeader(serialized) {
+        // Wait for previous iframe request to consume its header
+        await new Promise((resolve) => {
+            const timeoutId = setTimeout(() => {
+                clearInterval(intervalId);
+                resolve();
+            }, 5000);
+            const intervalId = setInterval(() => {
+                if (iframeHeader === undefined) {
+                    clearInterval(intervalId);
+                    clearTimeout(timeoutId);
+                    resolve();
+                }
+            }, 100);
+        });
+        iframeHeader = serialized;
+        return true;
     }
 })();
