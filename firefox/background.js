@@ -10,16 +10,39 @@
 
     const hakunekoTabs = new Map();
     const extensionUrl = browser.runtime.getURL("");
+    const tabHeaders = new Map();
 
     // Fix request headers
     browser.webRequest.onBeforeSendHeaders.addListener((details) => {
-        if (details.documentUrl !== `${hakunekoUrl}/` && !details.documentUrl?.startsWith(extensionUrl))
+        const tabHeader = tabHeaders.get(details.tabId);
+        if (
+            details.documentUrl !== `${hakunekoUrl}/` &&
+            !details.documentUrl?.startsWith(extensionUrl) &&
+            (tabHeader === undefined || details.type !== "main_frame")
+        )
             return {};
         if (details.url.startsWith(hakunekoUrl)) return {};
         const fetchApiSupportedPrefix = 'X-FetchAPI-'.toLowerCase();
         const oldHeaders = details.requestHeaders || [];
         const newHeaders = [];
         const removeSet = new Set();
+
+        // Set headers for web/src/engine/platform/firefox/RemoteBrowserWindow.Open
+        if (details.type === "main_frame" && tabHeader !== undefined && details.url === tabHeader.url) {
+            for (const [name, value] of Object.entries(tabHeader.headers)) {
+                if (name.toLowerCase().startsWith(fetchApiSupportedPrefix)) {
+                    const newName = name.substring(fetchApiSupportedPrefix.length);
+                    newHeaders.push({name: newName, value});
+                    removeSet.add(newName.toLowerCase());
+                }
+                else {
+                    newHeaders.push({name, value});
+                    removeSet.add(name.toLowerCase());
+                }
+            }
+            tabHeaders.delete(details.tabId);
+        }
+
         for (const header of oldHeaders) {
             // Avoid duplicated header entries
             if (header.name.toLowerCase().startsWith(fetchApiSupportedPrefix)) {
@@ -115,8 +138,12 @@
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (sender.origin !== hakunekoUrl) return;
         if (message.type !== 'InterProcessCommunication') return;
-        if (message.channel === "RemoteBrowserWindow.Open") {
+        if (message.channel === "RemoteBrowserWindow.OpenTab") {
             openTab(message.parameters, sender.tab.id).then(sendResponse);
+            return true;
+        }
+        if (message.channel === "RemoteBrowserWindow.LoadUrl") {
+            loadUrl(message.parameters).then(sendResponse);
             return true;
         }
         if (message.channel === "RemoteBrowserWindow.Close") {
@@ -147,10 +174,9 @@
     });
 
     async function openTab(parameters, senderId) {
-        const [url, show] = parameters;
+        const show = parameters[0];
         try {
             const tab = await browser.tabs.create({
-                url,
                 active: show
             });
             hakunekoTabs.set(tab.id, senderId);
@@ -162,6 +188,26 @@
                 error: error.message
             };
         }
+    }
+
+    async function loadUrl(parameters) {
+        const [tabId, url, headers] = parameters;
+        tabHeaders.set(tabId, {
+            url,
+            headers
+        });
+        return await browser.tabs.update(tabId, {
+            url
+        }).then((result) => {
+            return {
+                result: true
+            };
+        }).catch((error) => {
+            tabHeaders.delete(tabId);
+            return {
+                error: error.message
+            };
+        });
     }
 
     async function closeTab(parameters) {
