@@ -55,6 +55,23 @@
         });
     });
 
+    browser.webNavigation.onBeforeNavigate.addListener((details) => {
+        const { frameId, tabId, url } = details;
+        const senderId = hakunekoTabs.get(tabId);
+        if (senderId === undefined) return;
+        const isMainFrame = frameId === 0;
+        browser.tabs.executeScript(senderId, {
+            code: `window.postMessage({
+                channel: "RemoteBrowserWindow.OnBeforeNavigate",
+                tabId: ${tabId},
+                url: ${JSON.stringify(url)},
+                isMainFrame: ${isMainFrame}
+            })`
+        }).catch((error) => {
+            console.error(error.message);
+        });
+    });
+
     browser.tabs.onRemoved.addListener((tabId) => {
         hakunekoTabs.delete(tabId);
     });

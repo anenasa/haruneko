@@ -23,13 +23,23 @@ export default class RemoteBrowserWindow implements IRemoteBrowserWindow {
     };
 
     constructor(private readonly ipc: IPC<Channels.App, Channels.Web>) {
-        console.warn('OnBeforeNavigate not implemented');
         this.ipc.Listen("RemoteBrowserWindow.OnDomReady", this.OnDomReady);
+        this.ipc.Listen("RemoteBrowserWindow.OnBeforeNavigate", this.OnBeforeNavigate);
     }
 
     private OnDomReady = (data): Promise<void> => {
         if(data.tabId === this.tabId) {
             this.domReady.Dispatch();
+        }
+    }
+
+    private OnBeforeNavigate = (data): Promise<void> => {
+        const { tabId, url, isMainFrame } = data;
+        if(tabId !== this.tabId || !url.startsWith('http')) return;
+        if(isMainFrame) {
+            this.beforeWindowNavigate.Value = new URL(url);
+        } else {
+            this.beforeFrameNavigate.Value = new URL(url);
         }
     }
 
