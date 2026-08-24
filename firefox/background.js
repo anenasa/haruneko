@@ -11,6 +11,7 @@
     const hakunekoTabs = new Map();
     const extensionUrl = browser.runtime.getURL("");
     const tabHeaders = new Map();
+    const fetchApiSupportedPrefix = 'X-FetchAPI-'.toLowerCase();
 
     // Fix request headers
     browser.webRequest.onBeforeSendHeaders.addListener((details) => {
@@ -22,7 +23,6 @@
         )
             return {};
         if (details.url.startsWith(hakunekoUrl)) return {};
-        const fetchApiSupportedPrefix = 'X-FetchAPI-'.toLowerCase();
         const oldHeaders = details.requestHeaders || [];
         const newHeaders = [];
         const removeSet = new Set();
@@ -277,12 +277,30 @@
     // Calling fetch from extension
     async function fetchProviderFetch(parameters) {
         try {
-            const { url, method, headers, bodyUsed, body, credentials } = parameters[0];
+            const { url, method, headers, bodyUsed, body } = parameters[0];
+
+            // Update cookies, credentials: include still does not include partitioned cookies
+            const normalizedCookieHeaderName = (fetchApiSupportedPrefix + 'Cookie').toLowerCase();
+            const originalCookieHeaderName = Object.keys(headers).find(header => header.toLowerCase() === normalizedCookieHeaderName) ?? normalizedCookieHeaderName;
+            const headerCookies = headers[originalCookieHeaderName]?.split(';').filter(cookie => cookie.includes('=')).map(cookie => cookie.trim()) ?? [];
+            const browserCookies = await browser.cookies.getAll({
+                url,
+                partitionKey: {}
+            });
+            // TODO: partitioned and unpartitioned cookies can be duplicated?
+            for(const browserCookie of browserCookies) {
+                if(!headerCookies.some(cookie => cookie.startsWith(browserCookie.name + '='))) {
+                    headerCookies.push(`${browserCookie.name}=${browserCookie.value}`);
+                }
+            }
+            if(headerCookies.length > 0) {
+                headers[originalCookieHeaderName] = headerCookies.join('; ');
+            }
+
             const request = new Request(url, {
                 method,
                 headers: new Headers(headers),
-                body: bodyUsed ? body : undefined,
-                credentials
+                body: bodyUsed ? body : undefined
             });
             const response = await fetch(request);
             return {

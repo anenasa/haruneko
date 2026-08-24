@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Hakuneko helper",
   "permissions": [
+    "cookies",
     "downloads",
     "storage",
     "webNavigation",

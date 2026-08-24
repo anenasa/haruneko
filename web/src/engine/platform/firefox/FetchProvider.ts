@@ -64,7 +64,6 @@ export default class extends FetchProvider {
             headers: Object.fromEntries(request.headers),
             body: await request.arrayBuffer(),
             bodyUsed: request.bodyUsed,
-            credentials: request.credentials === "same-origin" ? "include" : request.credentials,
         }
         const result = await this.ipc.Send("FetchProvider.Fetch", serialized);
         const response = new Response(result.body || null, {
