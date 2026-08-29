@@ -137,7 +137,7 @@ export abstract class FetchProvider {
         if (regex.flags.indexOf('g') === -1) {
             throw new InternalError(`The provided RegExp must contain the global 'g' modifier!`);
         }
-        const response = await fetch(request);
+        const response = await this.Fetch(request);
         const data = await response.text();
         const result: string[] = [];
         let match = undefined;
@@ -154,7 +154,7 @@ export abstract class FetchProvider {
      * @returns The decoded response data
      */
     public async FetchProto<T extends JSONElement>(request: Request, schema: string, messageTypePath: string): Promise<T> {
-        const response = await fetch(request);
+        const response = await this.Fetch(request);
         const serialized = new Uint8Array(await response.arrayBuffer());
         const prototype = protobuf.parse(schema, { keepCase: true }).root.lookupType(messageTypePath);
         return prototype.decode(serialized).toJSON() as T;
