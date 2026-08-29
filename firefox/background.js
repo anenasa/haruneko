@@ -191,7 +191,8 @@
     }
 
     async function loadUrl(parameters) {
-        const [tabId, url, headers] = parameters;
+        const [tabId, url, headers, preload] = parameters;
+        injectPreload(tabId, preload);
         tabHeaders.set(tabId, {
             url,
             headers
@@ -208,6 +209,23 @@
                 error: error.message
             };
         });
+    }
+
+    // TODO: webNavigation.onCommitted is not early enough?
+    // Maybe use browser.contentScripts.register?
+    async function injectPreload(targetTabId, preload) {
+        if (!preload) return;
+        const listener = (details) => {
+            if (targetTabId !== details.tabId) return;
+            browser.webNavigation.onCommitted.removeListener(listener);
+            browser.tabs.executeScript(targetTabId, {
+                code: `window.eval(${JSON.stringify(preload)})`,
+                runAt: "document_start"
+            }).catch(error => {
+                console.error('preload error:', error.message);
+            });
+        };
+        browser.webNavigation.onCommitted.addListener(listener);
     }
 
     async function closeTab(parameters) {

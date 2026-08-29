@@ -44,10 +44,9 @@ export default class RemoteBrowserWindow implements IRemoteBrowserWindow {
     }
 
     public async Open(request: Request, show: boolean = false, preload: string = '') {
-        if (preload) console.warn('preload not implemented');
         this.tabId = await this.ipc.Send<number>("RemoteBrowserWindow.OpenTab", show);
         const headers = Object.fromEntries(request.headers);
-        await this.ipc.Send<number>("RemoteBrowserWindow.LoadUrl", this.tabId, request.url, headers);
+        await this.ipc.Send<number>("RemoteBrowserWindow.LoadUrl", this.tabId, request.url, headers, preload);
     }
 
     public async Close(): Promise<void> {
