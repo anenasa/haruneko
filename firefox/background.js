@@ -98,6 +98,8 @@
         const tabId = details.tabId;
         const senderId = hakunekoTabs.get(tabId);
         if (senderId === undefined) return;
+        // onDOMContentLoaded is triggered for about:blank on Android
+        if (details.url === "about:blank") return;
         browser.tabs.executeScript(senderId, {
             code: `window.postMessage({
                 channel: "RemoteBrowserWindow.OnDomReady",
