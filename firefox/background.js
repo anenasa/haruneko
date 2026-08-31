@@ -224,9 +224,16 @@
         const listener = (details) => {
             if (targetTabId !== details.tabId) return;
             browser.webNavigation.onCommitted.removeListener(listener);
-            browser.tabs.executeScript(targetTabId, {
-                code: `window.eval(${JSON.stringify(preload)})`,
-                runAt: "document_start"
+            browser.scripting.executeScript({
+                target: {
+                    tabId: targetTabId
+                },
+                func: (script) => {
+                    eval(script);
+                },
+                args: [preload],
+                world: 'MAIN',
+                injectImmediately: true
             }).catch(error => {
                 console.error('preload error:', error.message);
             });
@@ -285,11 +292,18 @@
         const [tabId, script] = parameters;
         try {
             requireHakunekoTab(tabId);
-            const result = await browser.tabs.executeScript(tabId, {
-                code: `window.eval(${JSON.stringify(script)})`
+            const result = await browser.scripting.executeScript({
+                target: {
+                    tabId
+                },
+                func: (script) => {
+                    return eval(script);
+                },
+                args: [script],
+                world: 'MAIN'
             });
             return {
-                result: result[0]
+                result: result[0].result
             };
         } catch (error) {
             return {
