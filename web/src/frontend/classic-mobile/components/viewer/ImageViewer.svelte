@@ -289,6 +289,7 @@
             class:double-page={isDoublePage}
             onclick={() => {
                 if (wide && isPaged) return;
+                event.stopPropagation();
                 currentImageIndex = index;
                 wide = true;
             }}
