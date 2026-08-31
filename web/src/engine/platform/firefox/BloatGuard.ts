@@ -7,7 +7,6 @@ export default class implements IBloatGuard {
     constructor(private readonly ipc: IPC<Channels.App, Channels.Web>, private readonly patterns: Array<string>) {}
 
     async Initialize(): Promise<void> {
-        console.warn('BloatGuard not implemented');
-        return;
+        return this.ipc.Send("BloatGuard.Initialize", this.patterns);
     }
 }

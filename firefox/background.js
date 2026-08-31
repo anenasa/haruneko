@@ -173,6 +173,10 @@
             downloadFile(message.parameters).then(sendResponse);
             return true;
         }
+        if (message.channel === "BloatGuard.Initialize") {
+            initializeBloatGuard(message.parameters).then(sendResponse);
+            return true;
+        }
     });
 
     async function openTab(parameters, senderId) {
@@ -385,5 +389,14 @@
             });
         });
         return result;
+    }
+
+    async function initializeBloatGuard(parameters) {
+        const patterns = parameters[0];
+        browser.webRequest.onBeforeRequest.addListener((details) => {
+            if (!hakunekoTabs.has(details.tabId)) return {};
+            return { cancel: true };
+        }, { urls: patterns }, ["blocking"]);
+        return {};
     }
 })();
